@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Accio Work - Agent团队Onboarding交互原型</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+  background: #f0f2f5;
+  color: #1a1a2e;
+  display: flex; flex-direction: column; align-items: center;
+  min-height: 100vh;
+}
+
+/* Navigation bar */
+.prototype-nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  background: #1a1a2e; color: #fff; padding: 0 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 48px; font-size: 13px;
+}
+.prototype-nav .nav-title { font-weight: 600; }
+.prototype-nav .nav-pages { display: flex; gap: 8px; }
+.prototype-nav button {
+  background: transparent; color: #aaa; border: 1px solid #444;
+  padding: 4px 14px; border-radius: 6px; cursor: pointer; font-size: 12px;
+  transition: all 0.15s;
+}
+.prototype-nav button:hover { border-color: #888; color: #fff; }
+.prototype-nav button.active { background: #1677FF; border-color: #1677FF; color: #fff; }
+
+/* Page container */
+.page-container {
+  margin-top: 72px; margin-bottom: 48px;
+  width: 960px;
+}
+
+/* Common card style */
+.card {
+  background: #fff; border-radius: 16px; padding: 40px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+/* Page 1: Guide Card */
+.guide-header { text-align: center; margin-bottom: 40px; }
+.guide-header .emoji { font-size: 48px; margin-bottom: 12px; }
+.guide-header h2 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+.guide-header .subtitle { font-size: 18px; color: #1677FF; font-weight: 500; margin-bottom: 4px; }
+.guide-header .desc { font-size: 14px; color: #666; }
+
+.agent-cards-row { display: flex; gap: 20px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+.agent-card {
+  width: 260px; padding: 24px; border: 2px solid #e5e7eb; border-radius: 16px;
+  text-align: center; cursor: pointer; transition: all 0.2s;
+  position: relative; background: #fff;
+}
+.agent-card:hover { transform: translateY(-4px); box-shadow: 0 4px 16px rgba(0,0,0,0.1); border-color: #1677FF; }
+.agent-card.selected { border-color: #1677FF; background: #f0f5ff; }
+.agent-card.deselected { opacity: 0.55; border-color: #e5e7eb; background: #fafafa; }
+.agent-card .icon { font-size: 44px; margin-bottom: 12px; }
+.agent-card h4 { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
+.agent-card .abilities { font-size: 13px; color: #888; line-height: 1.7; }
+.agent-card .badge {
+  display: inline-block; margin-top: 12px; padding: 3px 12px;
+  border-radius: 100px; font-size: 12px; font-weight: 500;
+}
+.agent-card.selected .badge { background: #e8f4fd; color: #1677FF; }
+.agent-card.deselected .badge { background: #f5f5f5; color: #999; }
+.agent-card.optional .badge { background: #f5f5f5; color: #999; }
+.agent-card.locked { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+.agent-card.locked .badge { background: #f5f5f5; color: #999; }
+
+.cta-section { text-align: center; margin-top: 32px; }
+.btn-primary {
+  display: inline-block; padding: 14px 48px;
+  background: linear-gradient(135deg, #1677FF, #00B96B);
+  color: #fff; border: none; border-radius: 12px;
+  font-size: 16px; font-weight: 600; cursor: pointer;
+  transition: all 0.2s; text-decoration: none;
+  box-shadow: 0 4px 12px rgba(22,119,255,0.3);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(22,119,255,0.4); }
+.skip-link { display: inline-block; margin-top: 16px; font-size: 14px; color: #999; cursor: pointer; text-decoration: none; }
+.skip-link:hover { color: #555; }
+.login-hint { margin-top: 24px; font-size: 13px; color: #999; }
+.login-hint a { color: #1677FF; cursor: pointer; text-decoration: none; }
+.login-hint a:hover { text-decoration: underline; }
+
+/* Page 2: Sign Up */
+.signup-layout { display: flex; gap: 40px; align-items: flex-start; }
+.signup-form { flex: 1; }
+.signup-form h3 { font-size: 22px; margin-bottom: 24px; font-weight: 600; }
+.form-group { margin-bottom: 16px; }
+.form-group input {
+  width: 100%; height: 48px; padding: 0 14px; border: 1px solid #d1d5db;
+  border-radius: 8px; font-size: 15px; transition: border-color 0.2s;
+}
+.form-group input:focus { outline: none; border-color: #1677FF; }
+.form-group .error-msg { font-size: 12px; color: #e53935; margin-top: 4px; display: none; }
+.form-group.has-error input { border-color: #e53935; }
+.form-group.has-error .error-msg { display: block; }
+.btn-form {
+  width: 100%; height: 48px; background: linear-gradient(135deg, #1677FF, #00B96B);
+  color: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+}
+.btn-form:hover { transform: translateY(-1px); }
+.divider { text-align: center; margin: 20px 0; color: #aaa; font-size: 13px; }
+.btn-oauth {
+  width: 100%; height: 48px; background: #fff; border: 1px solid #d1d5db;
+  border-radius: 8px; font-size: 14px; cursor: pointer; margin-bottom: 10px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: all 0.15s;
+}
+.btn-oauth:hover { border-color: #888; background: #fafafa; }
+
+.signup-value { width: 400px; background: #f0f4ff; border-radius: 16px; padding: 28px; }
+.signup-value h4 { font-size: 15px; margin-bottom: 16px; color: #1677FF; }
+.signup-value .value-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; font-size: 14px; }
+.signup-value .value-item .check { color: #2e7d32; font-weight: 600; }
+.signup-value .free-note { margin-top: 16px; padding-top: 14px; border-top: 1px solid #d0d7e8; font-size: 13px; color: #666; }
+
+/* Page 3: Team Confirm */
+.confirm-header { text-align: center; margin-bottom: 32px; }
+.confirm-header .emoji { font-size: 48px; margin-bottom: 12px; }
+.confirm-header h2 { font-size: 28px; font-weight: 700; }
+.team-member-list { background: #f9fafb; border-radius: 16px; padding: 4px; margin-bottom: 28px; }
+.team-member {
+  display: flex; align-items: center; gap: 14px; padding: 16px 20px;
+  border-bottom: 1px solid #eee;
+}
+.team-member:last-child { border-bottom: none; }
+.team-member .m-icon { font-size: 36px; width: 52px; text-align: center; }
+.team-member .m-info { flex: 1; }
+.team-member .m-name { font-size: 16px; font-weight: 600; }
+.team-member .m-desc { font-size: 13px; color: #888; margin-top: 2px; }
+.team-member .m-status { color: #2e7d32; font-size: 13px; font-weight: 500; background: #e8f5e9; padding: 4px 12px; border-radius: 100px; }
+
+.name-input-section { margin-bottom: 28px; }
+.name-input-section label { font-size: 14px; color: #666; display: block; margin-bottom: 8px; }
+.name-input-section input {
+  width: 100%; max-width: 480px; height: 44px; padding: 0 14px;
+  border: 1px solid #d1d5db; border-radius: 8px; font-size: 15px;
+}
+.name-input-section input:focus { outline: none; border-color: #1677FF; }
+
+.task-select-section { margin-bottom: 32px; }
+.task-select-section label { font-size: 14px; color: #666; display: block; margin-bottom: 12px; }
+.task-cards { display: flex; gap: 14px; flex-wrap: wrap; }
+.task-card {
+  width: 200px; padding: 20px; border: 2px solid #e5e7eb; border-radius: 12px;
+  cursor: pointer; transition: all 0.2s; text-align: center;
+}
+.task-card:hover { border-color: #1677FF; transform: translateY(-2px); }
+.task-card.selected { border-color: #1677FF; background: #f0f5ff; }
+.task-card .t-icon { font-size: 28px; margin-bottom: 8px; }
+.task-card .t-label { font-size: 14px; font-weight: 500; }
+
+.confirm-actions { text-align: center; }
+.secondary-link { display: inline-block; margin-top: 14px; font-size: 13px; color: #999; cursor: pointer; }
+.secondary-link:hover { color: #555; }
+
+/* Page 4: Dashboard with team */
+.dashboard-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #eee; }
+.dashboard-nav .logo { font-weight: 700; font-size: 18px; }
+.dashboard-nav .nav-links { display: flex; gap: 24px; font-size: 14px; color: #555; }
+.dashboard-nav .nav-links span { cursor: pointer; }
+.dashboard-nav .nav-links .active-nav { color: #1677FF; font-weight: 500; }
+.team-bar { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+.team-bar h3 { font-size: 18px; font-weight: 600; }
+.team-bar .beta-tag { font-size: 11px; background: #f0f4ff; color: #1677FF; padding: 2px 8px; border-radius: 4px; }
+.team-bar .add-agent { margin-left: auto; font-size: 13px; color: #1677FF; cursor: pointer; }
+.mini-agent-row { display: flex; gap: 14px; margin-bottom: 24px; }
+.mini-agent {
+  flex: 1; padding: 14px; border: 1px solid #e5e7eb; border-radius: 12px;
+  text-align: center; font-size: 13px;
+}
+.mini-agent .ma-icon { font-size: 24px; margin-bottom: 4px; }
+.mini-agent .ma-name { font-weight: 600; }
+.mini-agent .ma-status { font-size: 11px; color: #2e7d32; margin-top: 4px; }
+
+.chat-area { border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; }
+.chat-area .msg-count { font-size: 12px; color: #999; margin-bottom: 10px; }
+.chat-area .input-row { display: flex; gap: 10px; align-items: center; }
+.chat-area input {
+  flex: 1; height: 44px; padding: 0 14px; border: 1px solid #e5e7eb;
+  border-radius: 8px; font-size: 14px;
+}
+.chat-area input:focus { outline: none; border-color: #1677FF; }
+.plugin-toggle { font-size: 12px; color: #888; margin-top: 8px; }
+.ability-tags { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.ability-tag { padding: 5px 14px; border: 1px solid #e5e7eb; border-radius: 100px; font-size: 12px; color: #666; cursor: pointer; transition: all 0.15s; }
+.ability-tag:hover { border-color: #1677FF; color: #1677FF; }
+
+/* Page 5: Restricted chat */
+.warning-bar { display: flex; align-items: center; gap: 10px; background: #fffbe6; border: 1px solid #ffe58f; border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; }
+.warning-bar .warn-icon { font-size: 18px; }
+.warning-bar .warn-text { flex: 1; color: #8c6d00; }
+.warning-bar .warn-btn { padding: 6px 16px; background: linear-gradient(135deg, #1677FF, #00B96B); color: #fff; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+.warning-bar .warn-close { cursor: pointer; color: #999; font-size: 14px; }
+
+.single-agent-card { text-align: center; padding: 20px; border: 1px solid #e5e7eb; border-radius: 12px; margin-bottom: 20px; }
+.single-agent-card .sa-icon { font-size: 40px; margin-bottom: 8px; }
+.single-agent-card .sa-name { font-size: 16px; font-weight: 600; }
+.single-agent-card .sa-desc { font-size: 13px; color: #888; margin-top: 4px; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 32px; right: 32px; z-index: 2000;
+  background: #1a1a2e; color: #fff; padding: 16px 20px; border-radius: 12px;
+  font-size: 14px; display: none; align-items: center; gap: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2); max-width: 380px;
+}
+.toast.show { display: flex; animation: slideIn 0.3s ease-out; }
+.toast .toast-close { cursor: pointer; color: #999; font-size: 16px; }
+@keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* Loading overlay */
+.loading-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 1500;
+  background: rgba(255,255,255,0.9); display: none;
+  justify-content: center; align-items: center; flex-direction: column;
+}
+.loading-overlay.show { display: flex; }
+.loading-overlay .spinner {
+  width: 40px; height: 40px; border: 3px solid #e5e7eb;
+  border-top-color: #1677FF; border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 16px;
+}
+.loading-overlay .loading-text { font-size: 15px; color: #555; }
+.loading-overlay .loading-agents { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; font-size: 13px; color: #888; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Badge */
+.flow-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 4px;
+  font-size: 11px; font-weight: 500;
+}
+.flow-badge.green { background: #e8f5e9; color: #2e7d32; }
+.flow-badge.gray { background: #f5f5f5; color: #999; }
+
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="prototype-nav">
+  <span class="nav-title">🔬 Accio Work 原型 Demo — Agent团队Onboarding流程</span>
+  <div class="nav-pages">
+    <button onclick="showPage('guide')" id="nav-guide" class="active">① 引导卡片</button>
+    <button onclick="showPage('signup')" id="nav-signup">② 引导注册</button>
+    <button onclick="showPage('confirm')" id="nav-confirm">③ 团队确认</button>
+    <button onclick="showPage('dashboard')" id="nav-dashboard">④ 主工作台(有团队)</button>
+    <button onclick="showPage('restricted')" id="nav-restricted">⑤ 受限聊天(无团队)</button>
+  </div>
+</nav>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span>👋 你的团队已就绪！试试告诉ta们你想做什么</span>
+  <span class="toast-close" onclick="hideToast()">✕</span>
+</div>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text">正在准备你的团队...</div>
+  <div class="loading-agents">
+    <div>🔍 采购专家 — 已激活</div>
+    <div>🎨 设计助手 — 已激活</div>
+    <div>🏗️ 建站专家 — 已激活</div>
+  </div>
+</div>
+
+<!-- ==================== PAGE 1: GUIDE CARD ==================== -->
+<div class="page-container" id="page-guide">
+  <div class="card">
+    <div class="guide-header">
+      <div class="emoji">🎯</div>
+      <h2>创建你的 AI Agent 团队</h2>
+      <div class="subtitle">"一个人 + AI = 一个跨国团队"</div>
+      <p class="desc">在开始之前，先组建你的团队。他们随时待命。</p>
+    </div>
+
+    <div class="agent-cards-row">
+      <!-- 采购专家 -->
+      <div class="agent-card selected" id="agent-sourcing" onclick="toggleAgent('sourcing')">
+        <div class="icon">🔍</div>
+        <h4>采购专家</h4>
+        <p class="abilities">找产品<br>比价格<br>联系供应商</p>
+        <span class="badge">✅ 默认激活</span>
+      </div>
+      <!-- 设计助手 -->
+      <div class="agent-card selected" id="agent-design" onclick="toggleAgent('design')">
+        <div class="icon">🎨</div>
+        <h4>设计助手</h4>
+        <p class="abilities">产品图<br>Logo<br>视觉素材</p>
+        <span class="badge">✅ 默认激活</span>
+      </div>
+      <!-- 建站专家 -->
+      <div class="agent-card selected" id="agent-site" onclick="toggleAgent('site')">
+        <div class="icon">🏗️</div>
+        <h4>建站专家</h4>
+        <p class="abilities">Shopify<br>WooCommerce<br>独立站搭建</p>
+        <span class="badge">✅ 默认激活</span>
+      </div>
+    </div>
+
+    <div class="agent-cards-row">
+      <!-- 运营顾问 (optional) -->
+      <div class="agent-card optional deselected" id="agent-ops" onclick="toggleAgent('ops')">
+        <div class="icon">📊</div>
+        <h4>运营顾问</h4>
+        <p class="abilities">店铺诊断<br>广告优化</p>
+        <span class="badge">⬜ 可选激活</span>
+      </div>
+      <!-- 更多角色 (locked) -->
+      <div class="agent-card locked">
+        <div class="icon">🌐</div>
+        <h4>更多角色</h4>
+        <p class="abilities">即将上线</p>
+        <span class="badge">🔒 敬请期待</span>
+      </div>
+    </div>
+
+    <div class="cta-section">
+      <a href="#" class="btn-primary" onclick="goToSignup(event)">🚀 一键创建我的团队</a>
+      <br>
+      <a href="#" class="skip-link" onclick="goToRestricted(event)">稍后再说 →</a>
+      <div class="login-hint">已有账号？<a href="#" onclick="goToSignup(event)">登录</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAGE 2: SIGN UP ==================== -->
+<div class="page-container hidden" id="page-signup">
+  <div class="card">
+    <div class="signup-layout">
+      <div class="signup-form">
+        <h3>创建你的账号，<br>团队马上组建</h3>
+        <div class="form-group" id="fg-email">
+          <input type="email" placeholder="📧  邮箱地址" id="signupEmail">
+          <div class="error-msg">该邮箱已注册，请 <a href="#" onclick="showLoginForm()">直接登录</a></div>
+        </div>
+        <div class="form-group" id="fg-password">
+          <input type="password" placeholder="🔒  密码" id="signupPassword">
+        </div>
+        <button class="btn-form" onclick="doSignup()">🚀 创建账号 & 组建团队</button>
+
+        <div class="divider">────── 或 ──────</div>
+
+        <button class="btn-oauth" onclick="doOAuth('google')">
+          <span style="font-weight:600;color:#4285F4;">G</span> 使用 Google 账号继续
+        </button>
+        <button class="btn-oauth" onclick="doOAuth('apple')">
+          <span style="font-size:18px;">🍎</span> 使用 Apple 账号继续
+        </button>
+        <div style="text-align:center;margin-top:12px;font-size:13px;color:#888;">
+          已有账号？<a href="#" style="color:#1677FF;cursor:pointer;" onclick="showLoginForm()">登录</a>
+        </div>
+      </div>
+      <div class="signup-value">
+        <h4>💡 你将拥有：</h4>
+        <div class="value-item"><span class="check">✅</span> 采购专家 — 帮你找品·比价·联系供应商</div>
+        <div class="value-item"><span class="check">✅</span> 设计助手 — 产品图·Logo·视觉素材</div>
+        <div class="value-item"><span class="check">✅</span> 建站专家 — Shopify·WooCommerce·独立站搭建</div>
+        <div class="free-note">🆓 免费开始，无需信用卡</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAGE 3: TEAM CONFIRM ==================== -->
+<div class="page-container hidden" id="page-confirm">
+  <div class="card">
+    <div class="confirm-header">
+      <div class="emoji">🎉</div>
+      <h2>你的团队已就绪！</h2>
+    </div>
+
+    <div class="team-member-list">
+      <div class="team-member">
+        <div class="m-icon">🔍</div>
+        <div class="m-info"><div class="m-name">采购专家</div><div class="m-desc">帮你在全球范围内找品·比价·联系供应商</div></div>
+        <div class="m-status">🟢 已就绪</div>
+      </div>
+      <div class="team-member">
+        <div class="m-icon">🎨</div>
+        <div class="m-info"><div class="m-name">设计助手</div><div class="m-desc">产品图·Logo·视觉素材一站式搞定</div></div>
+        <div class="m-status">🟢 已就绪</div>
+      </div>
+      <div class="team-member">
+        <div class="m-icon">🏗️</div>
+        <div class="m-info"><div class="m-name">建站专家</div><div class="m-desc">Shopify·WooCommerce·独立站搭建与SEO优化</div></div>
+        <div class="m-status">🟢 已就绪</div>
+      </div>
+    </div>
+
+    <div class="name-input-section">
+      <label>📝 给你的团队起个名字（可选）</label>
+      <input type="text" id="teamName" placeholder="例如：我的跨境团队、出海小分队、小王的外贸AI助手...">
+    </div>
+
+    <div class="task-select-section">
+      <label>🎯 你想让团队先帮你做什么？</label>
+      <div class="task-cards">
+        <div class="task-card" id="task-sourcing" onclick="selectTask('sourcing')">
+          <div class="t-icon">🔍</div>
+          <div class="t-label">找产品/供应商</div>
+        </div>
+        <div class="task-card" id="task-site" onclick="selectTask('site')">
+          <div class="t-icon">🏗️</div>
+          <div class="t-label">建独立站</div>
+        </div>
+        <div class="task-card" id="task-ops" onclick="selectTask('ops')">
+          <div class="t-icon">📊</div>
+          <div class="t-label">优化现有店铺</div>
+        </div>
+        <div class="task-card" id="task-explore" onclick="selectTask('explore')">
+          <div class="t-icon">🧭</div>
+          <div class="t-label">先逛逛看</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="confirm-actions">
+      <a href="#" class="btn-primary" onclick="goToDashboard(event)">进入工作台 →</a>
+      <br>
+      <span class="secondary-link" onclick="alert('此处将进入Agents高级配置页面（本原型未展开）')">继续配置更多Agent（高级用户入口）</span>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAGE 4: DASHBOARD WITH TEAM ==================== -->
+<div class="page-container hidden" id="page-dashboard">
+  <div class="card">
+    <div class="dashboard-nav">
+      <span class="logo">🔺 Accio Work</span>
+      <div class="nav-links">
+        <span class="active-nav">New task</span>
+        <span>Agents</span>
+        <span>Plugins</span>
+        <span>Channels</span>
+      </div>
+    </div>
+
+    <div class="team-bar">
+      <h3 id="displayTeamName">我的跨境团队</h3>
+      <span class="beta-tag">Beta</span>
+      <span class="add-agent">+ 添加Agent</span>
+    </div>
+
+    <div class="mini-agent-row">
+      <div class="mini-agent"><div class="ma-icon">🔍</div><div class="ma-name">采购专家</div><div class="ma-status">🟢 就绪</div></div>
+      <div class="mini-agent"><div class="ma-icon">🎨</div><div class="ma-name">设计助手</div><div class="ma-status">🟢 就绪</div></div>
+      <div class="mini-agent"><div class="ma-icon">🏗️</div><div class="ma-name">建站专家</div><div class="ma-status">🟢 就绪</div></div>
+    </div>
+
+    <div class="chat-area">
+      <div class="msg-count">2 / ∞</div>
+      <div class="input-row">
+        <input type="text" id="dashboardInput" placeholder="试试告诉你的团队想做什么...">
+        <button style="padding:8px 20px;background:linear-gradient(135deg,#1677FF,#00B96B);color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer;">发送</button>
+      </div>
+      <div class="plugin-toggle">Use plugins: Auto ▼</div>
+      <div class="ability-tags">
+        <span class="ability-tag">Productivity</span>
+        <span class="ability-tag">Design</span>
+        <span class="ability-tag">Site Building</span>
+        <span class="ability-tag" style="border-color:#1677FF;color:#1677FF;">Sourcing</span>
+        <span class="ability-tag">Alibaba.com Operation</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PAGE 5: RESTRICTED CHAT ==================== -->
+<div class="page-container hidden" id="page-restricted">
+  <div class="card">
+    <div class="dashboard-nav">
+      <span class="logo">🔺 Accio Work</span>
+      <div class="nav-links">
+        <span class="active-nav">New task</span>
+        <span>Agents</span>
+        <span>Plugins</span>
+        <span>Channels</span>
+      </div>
+    </div>
+
+    <div class="warning-bar" id="warningBar">
+      <span class="warn-icon">💡</span>
+      <span class="warn-text">你还没有创建Agent团队。创建团队后可以体验多Agent协作完成复杂任务。</span>
+      <button class="warn-btn" onclick="showPage('guide')">创建团队 →</button>
+      <span class="warn-close" onclick="document.getElementById('warningBar').style.display='none'" title="关闭（72h后恢复）">✕</span>
+    </div>
+
+    <div class="single-agent-card">
+      <div class="sa-icon">🔺</div>
+      <div class="sa-name">Accio Assistant</div>
+      <div class="sa-desc">Handle wide-ranging business tasks</div>
+      <div style="margin-top:10px;font-size:12px;color:#888;">← 通用助手模式（未使用Agent团队）</div>
+    </div>
+
+    <div class="chat-area">
+      <div class="msg-count">0 / 5 <span style="font-size:11px;color:#e53935;">（免费额度）</span></div>
+      <div class="input-row">
+        <input type="text" placeholder="How can Accio Work help my business?">
+        <button style="padding:8px 20px;background:#ccc;color:#fff;border:none;border-radius:8px;font-size:14px;">发送</button>
+      </div>
+      <div class="plugin-toggle">Use plugins: Auto ▼</div>
+      <div class="ability-tags">
+        <span class="ability-tag">Productivity</span>
+        <span class="ability-tag">Design</span>
+        <span class="ability-tag">Site Building</span>
+        <span class="ability-tag">Sourcing</span>
+        <span class="ability-tag">Alibaba.com Operation</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Global state
+let selectedAgents = { sourcing: true, design: true, site: true, ops: false };
+let selectedTask = null;
+
+function toggleAgent(type) {
+  selectedAgents[type] = !selectedAgents[type];
+  const el = document.getElementById('agent-' + type);
+  if (selectedAgents[type]) {
+    el.classList.add('selected');
+    el.classList.remove('deselected');
+    el.querySelector('.badge').textContent = '✅ 默认激活';
+  } else {
+    el.classList.remove('selected');
+    el.classList.add('deselected');
+    if (type === 'ops') {
+      el.querySelector('.badge').textContent = '⬜ 可选激活';
+    } else {
+      el.querySelector('.badge').textContent = '⬜ 已取消';
+    }
+  }
+}
+
+function showPage(pageName) {
+  // Hide all pages
+  ['guide','signup','confirm','dashboard','restricted'].forEach(p => {
+    document.getElementById('page-' + p).classList.add('hidden');
+    document.getElementById('nav-' + p).classList.remove('active');
+  });
+  // Show target
+  document.getElementById('page-' + pageName).classList.remove('hidden');
+  document.getElementById('nav-' + pageName).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function goToSignup(e) { e.preventDefault(); showPage('signup'); }
+function goToRestricted(e) { e.preventDefault(); showPage('restricted'); }
+
+function doSignup() {
+  const email = document.getElementById('signupEmail').value.trim();
+  const password = document.getElementById('signupPassword').value.trim();
+
+  // Simulate email exists check
+  if (email === 'test@test.com') {
+    document.getElementById('fg-email').classList.add('has-error');
+    return;
+  }
+  document.getElementById('fg-email').classList.remove('has-error');
+
+  // Simulate loading -> go to confirm
+  const overlay = document.getElementById('loadingOverlay');
+  overlay.classList.add('show');
+
+  setTimeout(() => {
+    overlay.classList.remove('show');
+    showPage('confirm');
+  }, 2000);
+}
+
+function doOAuth(provider) {
+  const overlay = document.getElementById('loadingOverlay');
+  overlay.querySelector('.loading-text').textContent = '正在通过 ' + (provider === 'google' ? 'Google' : 'Apple') + ' 登录...';
+  overlay.classList.add('show');
+
+  setTimeout(() => {
+    overlay.querySelector('.loading-text').textContent = '正在准备你的团队...';
+    overlay.classList.remove('show');
+    showPage('confirm');
+  }, 1500);
+}
+
+function showLoginForm() { /* simplified: just go to signup loading */ goToSignup({ preventDefault: () => {} }); }
+
+function selectTask(taskType) {
+  selectedTask = taskType;
+  document.querySelectorAll('.task-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('task-' + taskType).classList.add('selected');
+}
+
+function goToDashboard(e) {
+  e.preventDefault();
+
+  // Show loading
+  const overlay = document.getElementById('loadingOverlay');
+  overlay.classList.add('show');
+  overlay.querySelector('.loading-text').textContent = '正在准备你的团队...';
+
+  setTimeout(() => {
+    overlay.classList.remove('show');
+
+    // Set team name
+    const nameInput = document.getElementById('teamName').value.trim();
+    document.getElementById('displayTeamName').textContent = nameInput || '我的跨境团队';
+
+    // Set dashboard prompt based on selected task
+    const prompts = {
+      'sourcing': '帮我找______的供应商，目标市场______',
+      'site': '帮我在______上开一个______主题的店铺',
+      'ops': '帮我诊断我的______店铺，看看哪些地方可以优化',
+      'explore': ''
+    };
+    if (selectedTask && prompts[selectedTask]) {
+      document.getElementById('dashboardInput').value = prompts[selectedTask];
+    }
+
+    showPage('dashboard');
+
+    // Show welcome toast
+    setTimeout(() => {
+      document.getElementById('toast').classList.add('show');
+    }, 500);
+
+    // Auto-hide toast
+    setTimeout(() => {
+      document.getElementById('toast').classList.remove('show');
+    }, 6000);
+  }, 2500);
+}
+
+function hideToast() {
+  document.getElementById('toast').classList.remove('show');
+}
+
+// Keyboard shortcut
+document.addEventListener('keydown', function(e) {
+  if (e.key === '1') showPage('guide');
+  if (e.key === '2') showPage('signup');
+  if (e.key === '3') showPage('confirm');
+  if (e.key === '4') showPage('dashboard');
+  if (e.key === '5') showPage('restricted');
+});
+</script>
+
+<div style="text-align:center;padding:20px;color:#999;font-size:12px;margin-top:auto;">
+  💡 按键盘 1-5 快速切换页面 | 这是一个交互原型 Demo，点击按钮可以实际操作
+</div>
+
+</body>
+</html>
